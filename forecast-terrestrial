@@ -1,12 +1,27 @@
-#Saving forecast for each target
+Dowloading the target file for 30min measurements
 ```{r}
+download.file("https://data.ecoforecast.org/targets/terrestrial/terrestrial_30min-targets.csv.gz",
+              "terrestrial_30min-targets.csv.gz")
+
+terrestrial_targets_30min <- read_csv("terrestrial_30min-targets.csv.gz", guess_max = 10000)
+```
+
+
+target files into tibble format
+```{r}
+target30 <-as_tsibble(terrestrial_targets_30min, index = time, key = siteID)
+## The sm30_target file comes from the 02_target_terrestrial R code
+swvc30<- as_tsibble(sm30_target,index = time, key = siteID)
+
+
+#Saving forecast for each target + pivot tables 
 ARIMA_nee_saved <- target30 %>% fill("nee") %>% 
   model(arima = ARIMA(nee))%>% 
   forecast(h = "1 year") %>% 
   mutate(mean_nee = mean(nee),
          sd_nee = sqrt(variance(nee)))
 ```
-#Creating pivot table
+
 ```{r}
 ARIMA_nee_saved <- ARIMA_nee_saved %>% pivot_longer(c(`mean_nee`, `sd_nee`), names_to = "nee_statistics", values_to = "nee", names_repair = "unique")
 
@@ -19,7 +34,7 @@ ARIMA_le_saved<-target30 %>% fill("le") %>%
   mutate(mean_le=mean(le),
          sd_le=sqrt(variance(le)))
 ```
-#Creating pivot table
+
 ```{r}
 ARIMA_le_saved <- ARIMA_le_saved %>% pivot_longer(c(`mean_le`, `sd_le`), names_to = "statistics", values_to = "le", names_repair = "unique")
 ```
@@ -33,7 +48,7 @@ ARIMA_swvc_saved<-swvc30 %>% fill("vswc", .direction = "up") %>%
          sd_vswc=sqrt(variance(vswc))) %>%
   rename(mean = mean_vswc, sd = sd_vswc)
 ```
-#Creating pivot table
+
 ```{r}
 ARIMA_swvc_saved <- ARIMA_swvc_saved %>% pivot_longer(c(`mean`, `sd`), names_to = "vswc_statistics", values_to = "vswc", names_repair = "unique")
 ```
