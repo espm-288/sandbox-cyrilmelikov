@@ -1,0 +1,60 @@
+#Saving forecast for each target
+```{r}
+ARIMA_nee_saved <- target30 %>% fill("nee") %>% 
+  model(arima = ARIMA(nee))%>% 
+  forecast(h = "1 year") %>% 
+  mutate(mean_nee = mean(nee),
+         sd_nee = sqrt(variance(nee)))
+```
+
+```{r}
+ARIMA_nee_saved <- ARIMA_nee_saved %>% pivot_longer(c(`mean_nee`, `sd_nee`), names_to = "nee_statistics", values_to = "nee", names_repair = "unique")
+
+```
+
+```{r}
+ARIMA_le_saved<-target30 %>% fill("le") %>% 
+ model(arima = ARIMA(le)) %>% 
+  forecast(h="1 year") %>% 
+  mutate(mean_le=mean(le),
+         sd_le=sqrt(variance(le)))
+```
+
+```{r}
+ARIMA_le_saved <- ARIMA_le_saved %>% pivot_longer(c(`mean_le`, `sd_le`), names_to = "statistics", values_to = "le", names_repair = "unique")
+```
+
+
+```{r}
+ARIMA_swvc_saved<-swvc30 %>% fill("vswc", .direction = "up") %>% 
+  model(arima= ARIMA(vswc)) %>% 
+  forecast(h= "1 year") %>% 
+  mutate(mean_vswc=mean(vswc),
+         sd_vswc=sqrt(variance(vswc))) %>%
+  rename(mean = mean_vswc, sd = sd_vswc)
+```
+
+```{r}
+ARIMA_swvc_saved <- ARIMA_swvc_saved %>% pivot_longer(c(`mean`, `sd`), names_to = "vswc_statistics", values_to = "vswc", names_repair = "unique")
+```
+
+
+#Joining Forecasts from Pivot Tables
+```{r}
+forecast_saved <- cbind(ARIMA_swvc_saved, ARIMA_le_saved$le...7, ARIMA_nee_saved$nee...7) %>% 
+ rename(
+   le = `ARIMA_le_saved$le...7`,
+   nee = `ARIMA_nee_saved$nee...7`,
+   vswc = `vswc...7`,
+   statistic = `vswc_statistics`) %>%  
+  mutate( data_assimilation = 0,
+           forecast = 1) %>% 
+  select(time, siteID, statistic, vswc, nee, le, data_assimilation, forecast)
+```
+
+#Creating csv file for the forecasted values
+```{r}
+forecast_file_name_base <- paste0("terrestrial-",as_date(start_forecast),"-","UCB_XT")
+forecast_file <- paste0(forecast_file_name_base, ".csv")
+write_csv(forecast_saved, forecast_file)
+```
