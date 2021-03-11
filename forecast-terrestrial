@@ -6,7 +6,7 @@ ARIMA_nee_saved <- target30 %>% fill("nee") %>%
   mutate(mean_nee = mean(nee),
          sd_nee = sqrt(variance(nee)))
 ```
-
+#Creating pivot table
 ```{r}
 ARIMA_nee_saved <- ARIMA_nee_saved %>% pivot_longer(c(`mean_nee`, `sd_nee`), names_to = "nee_statistics", values_to = "nee", names_repair = "unique")
 
@@ -19,7 +19,7 @@ ARIMA_le_saved<-target30 %>% fill("le") %>%
   mutate(mean_le=mean(le),
          sd_le=sqrt(variance(le)))
 ```
-
+#Creating pivot table
 ```{r}
 ARIMA_le_saved <- ARIMA_le_saved %>% pivot_longer(c(`mean_le`, `sd_le`), names_to = "statistics", values_to = "le", names_repair = "unique")
 ```
@@ -33,7 +33,7 @@ ARIMA_swvc_saved<-swvc30 %>% fill("vswc", .direction = "up") %>%
          sd_vswc=sqrt(variance(vswc))) %>%
   rename(mean = mean_vswc, sd = sd_vswc)
 ```
-
+#Creating pivot table
 ```{r}
 ARIMA_swvc_saved <- ARIMA_swvc_saved %>% pivot_longer(c(`mean`, `sd`), names_to = "vswc_statistics", values_to = "vswc", names_repair = "unique")
 ```
