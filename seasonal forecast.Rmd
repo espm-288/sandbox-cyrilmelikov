@@ -21,14 +21,17 @@ library(scoringRules)
 ```{r}
 download.file("https://data.ecoforecast.org/targets/terrestrial/terrestrial_30min-targets.csv.gz",
               "terrestrial_30min-targets.csv.gz")
-
-terrestrial_targets_30min <- read_csv("terrestrial_30min-targets.csv.gz", guess_max = 10000)
+## guess_max must be large enough to avoid creating NAs, see the warning message from smaller guess_max
+terrestrial_targets_30min <- read_csv("terrestrial_30min-targets.csv.gz", guess_max = 20000)
 ```
 
 
 
-#Converting target files into tibble format
+Converting target files into tibble format
+
 ```{r}
+## Check for duplicates first:  hmm... lots of duplicates
+tsibble::duplicates(terrestrial_targets_30min, index=time, key=siteID)
 target30 <-as_tsibble(terrestrial_targets_30min, index = time, key = siteID)
 swvc30<- as_tsibble(sm30_target,index = time, key = siteID)
 ```
